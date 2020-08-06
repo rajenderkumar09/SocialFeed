@@ -25,10 +25,33 @@ class RootViewController: UIViewController {
 		}
 	}
 
+
+	func maximum(nums:[Int]) -> Int {
+        let maxResult = 0;
+        var mask = 0;
+		for i in 31...0 {
+            mask |= (1 << i);
+            var set = Set<[Int]>()
+			for num in nums {
+				set.hashValue = (num | mask)
+			}
+			let greedyTry = maxResult | (1 << i);
+			for num in set {
+                if(set.contains(greedyTry ^ num)) {
+                    maxResult = greedyTry;
+                    break;
+                }
+            }
+		}
+        return maxResult;
+
+	}
+
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		// Do any additional setup after loading the view.
 		self.configureUI()
+		self.maximum(num: [1, 2, 3, 4, 5, 6, 7, 8])
 	}
 
 	override func didReceiveMemoryWarning() {
@@ -39,7 +62,29 @@ class RootViewController: UIViewController {
 	//MARK: Private Methods
 	private func configureUI() {
 		self.title = "Newsfeed"
-		self.getPosts()
+		getAccessToken()
+	}
+
+
+	func getAccessToken() {
+		//https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={app-id}& client_secret={app-secret}&fb_exchange_token={short-lived-user-access-token}"
+		let parameters = ["grant_type":"fb_exchange_token", "client_id":"2655100154702853", "client_secret":"{fa7c4e1e5173565a3ee01510992ace38}", "fb_exchange_token":"{EAAgF6ZApKtQ0BAPUZBRvRjOU2bp4D0D0QdOdSE4ZAUmXhZCFkWBxD3xpgvvPgTnj7GaO7ARz5pMARzdIsZARzCzaGIPiCphtUKmTw8wY4xngCT3cIxzze3T9ZCku90JzYzDCIgBhEE13pw4aUemgrtZCms2Eb8yUQJxS8kraRHGXZCWPhXJZCTaxRiSJZAoMjr5lA94p8PPZA7D8wZDZD}"]
+
+		let path = "/oauth/access_token"
+		self.showProgressHUD()
+
+		let numbers = "1 2 3 4"
+		let new = numbers.comb
+
+
+		let request = FBSDKCoreKit.GraphRequest(graphPath: path, parameters: parameters, httpMethod: HTTPMethod.post)
+		request.start { (connection, response, error) in
+
+			self.hideProgressHUD()
+			print(response)
+			self.getPosts()
+		}
+
 	}
 
 	func getPosts() {
@@ -47,7 +92,7 @@ class RootViewController: UIViewController {
 		let path = "/\(pageName)/posts"
 		self.showProgressHUD()
 
-		let request = FBSDKCoreKit.GraphRequest(graphPath: path, parameters: ["fields": "name, email, friends"])
+		let request = FBSDKCoreKit.GraphRequest(graphPath: path, parameters: ["fields": "id, attachments, caption, child_attachments, description, from, full_picture, icon, message, message_tags, name, permalink_url, properties, status_type, story"])
 		request.start { (connection, response, error) in
 
 			self.hideProgressHUD()
